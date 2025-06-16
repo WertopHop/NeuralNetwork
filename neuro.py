@@ -8,7 +8,7 @@ def sigmoid(x):
 
 def deriv_sigmoid(x):
     fx = sigmoid(x)
-    return fx * (1 - fx)
+    return fx * (1 - fx) 
 
 def mse_loss(y_true, y_pred):
     return np.mean((y_true - y_pred) ** 2)
