@@ -14,7 +14,7 @@ def mse_loss(y_true, y_pred):
     return np.mean((y_true - y_pred) ** 2)
 
 class NeuralNetwork():
-    def __init__(self, photo = None, layers_size = np.array([784, 512, 128, 10])):
+    def __init__(self, photo = None, layers_size = np.array([784, 32, 16, 10])):
         self.layers_size = layers_size
         self.weights = []
         for i in range(len(layers_size) - 1):
