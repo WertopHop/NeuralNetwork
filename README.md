@@ -2,7 +2,7 @@
 
 **This educational repository neural network development, starting from basic parameter tuning and progressing to optimized implementations that enhance model performance and accuracy. By building a neural network from scratch in Python without high-level frameworks, you’ll gain a deep understanding of core machine learning concepts.**
 
-## Neural Network from Scratch
+## Python Neural Network from Scratch
 
 This is a neural network implementation from scratch in Python, without using high-level machine learning frameworks (such as TensorFlow or PyTorch). The project demonstrates a complete understanding of neural networks, including feedforward and backpropagation.
 
