@@ -58,22 +58,20 @@ def prepare_openml_data(dataset_id, target_column=None):
         output_size = y.shape[1]
     return train_loader, test_loader, input_size, output_size
 
-def deriv_sigmoid(x):
-    sigm = x.sigmoid()
-    return sigm * (1 - sigm)
 
 class NeuralNetwork(nn.Module):
-    def __init__(self, layers_size = torch.tensor([784, 256, 16, 10])):
+    def __init__(self, layers_size = torch.tensor([784, 256, 16, 10]), dropout_rate=0.2):
         super(NeuralNetwork, self).__init__()
-        self.layers_size = layers_size
-        self.layers = nn.ModuleList([nn.Linear(layers_size[i], layers_size[i+1]) for i in range(len(layers_size) - 1)])
-        self.dropout = nn.Dropout(p=0.2)
-
+        layers = []
+        for i in range(len(layers_size) - 2):
+            layers.append(nn.Linear(layers_size[i], layers_size[i + 1]))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(dropout_rate))
+        layers.append(nn.Linear(layers_size[-2], layers_size[-1]))
+        self.model = nn.Sequential(*layers)
+    
     def forward(self, x):
-        for i in range(len(self.layers) - 1):
-            x = self.dropout(torch.sigmoid(self.layers[i](x)))
-        x = self.layers[-1](x)
-        return x
+        return self.model(x)
 
 
 def train_model(model, train_loader, criterion, optimizer, device, epochs=10):
@@ -107,13 +105,10 @@ def evaluate_model(model, test_loader, criterion, device):
                 _, predicted = torch.max(outputs.data, 1)
                 total += targets.size(0)
                 correct += (predicted == targets).sum().item()
-    
     avg_test_loss = test_loss / len(test_loader)
-    
     if total > 0:  
         accuracy = 100 * correct / total
         print(f'Точность модели: {accuracy:.2f}%')
-    
     print(f'Средние потери на тестовой выборке: {avg_test_loss:.4f}')
     return avg_test_loss
 
@@ -132,6 +127,9 @@ def main():
     train_model(model, train_loader, Loss, optimizer, device, epochs=10)
 
     evaluate_model(model, test_loader, Loss, device)
+
+    torch.save(model.state_dict(), "pytorch_model.pth")
+    print("Модель сохранена в 'pytorch_model.pth'")
 
 if __name__ == "__main__":
     main()
