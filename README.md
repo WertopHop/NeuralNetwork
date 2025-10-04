@@ -46,6 +46,7 @@ pip install numpy openml pandas
 python python_neuro/neuro.py
 ```
 
+---
 
 ## C++ version
 
@@ -109,20 +110,79 @@ clang++ -std=c++11 -fopenmp -O3 -o neural_network C++_neuro/Neuro.cpp
 # Enter 'y' to train or just press Enter to load an existing model
 ```
 
+---
+
+## PyTorch Neural Network
+
+This is a modern implementation of a neural network using the **PyTorch** framework. This version demonstrates best practices in deep learning, including automatic differentiation, GPU acceleration, and advanced training techniques.
+
+### Technologies and Tools
+
+- **Programming Language**: Python 3
+- **Framework**: PyTorch
+- **Libraries**:
+  - `torch` - PyTorch deep learning framework
+  - `torch.nn` - neural network modules
+  - `torch.optim` - optimization algorithms
+  - `openml` - for loading datasets
+  - `pandas` - for data manipulation
+  - `numpy` - for numerical operations
+  - `scikit-learn` - for data preprocessing and train-test split
+  - `torch.utils.data` - for data loading utilities
+
+### Neural Network Architecture
+
+The PyTorch implementation uses a flexible, modular architecture:
+- **Input Layer**: 784 neurons (for 28x28 pixel images)
+- **Hidden Layers**:
+  - First Hidden Layer: 256 neurons + ReLU + Dropout (0.2)
+  - Second Hidden Layer: 16 neurons + ReLU + Dropout (0.2)
+- **Output Layer**: 10 neurons (for classifying digits 0-9)
+
+**Activation Function**: ReLU (Rectified Linear Unit)  
+**Loss Function**: CrossEntropyLoss (for multi-class classification)  
+**Optimizer**: Adam (Adaptive Moment Estimation)  
+**Regularization**: Dropout (20% dropout rate)
+
+### Advantages over From-Scratch Implementation
+
+- ✅ **Automatic Differentiation**: No manual backpropagation implementation needed
+- ✅ **GPU Acceleration**: Significant speedup on CUDA-enabled devices
+- ✅ **Advanced Optimizers**: Adam optimizer with adaptive learning rates
+- ✅ **Better Activation Functions**: ReLU instead of Sigmoid (reduces vanishing gradients)
+- ✅ **Regularization**: Dropout prevents overfitting
+- ✅ **Data Preprocessing**: Comprehensive StandardScaler normalization
+- ✅ **Batch Processing**: Efficient mini-batch training with DataLoader
+- ✅ **Production Ready**: Industry-standard framework with extensive support
+- 
+### Installing Dependencies
+
+```bash
+pip install torch torchvision openml pandas numpy scikit-learn
+```
+
+### Running
+
+```bash
+python PyTorch_Neural_Network/Neuro_PyTorch.py
+```
 
 ## Dataset
 
-The project uses the **MNIST** dataset, which contains:
+The project uses the **MNIST** dataset (OpenML ID: 554), which contains:
 - 70,000 images of handwritten digits (0-9)
-- Image size: 28x28 pixels
+- Image size: 28x28 pixels (784 features when flattened)
 - Training set: 60,000 images
-- Data normalization: pixel values ​​are divided by 255 to convert them to the range [0, 1]
+- Test set: 10,000 images
+- Normalized pixel values in range [0, 1]
 
-**Python version**: Loads the dataset via OpenML (dataset ID: 554)
+**Python from-scratch version**: Loads via OpenML, uses 60,000 samples for training  
+**C++ version**: Reads from ARFF file  
+**PyTorch version**: Loads via OpenML with 85%/15% train-test split, applies StandardScaler normalization
 
-**C++ version**: Reads the dataset from an ARFF file (`mnist_784.arff`)
 
 ---
+
 
 ## Model Accuracy
 
@@ -133,3 +193,15 @@ The project uses the **MNIST** dataset, which contains:
 ### C++ Version
 
 - **Accuracy on the testing set Sample Loss**: 99.2%
+
+### Pytorch Version
+
+- **Accuracy on the testing set Sample Loss**: 96.3%
+
+  
+---
+
+
+## Author
+
+**WertopHop** - [GitHub](https://github.com/WertopHop)
