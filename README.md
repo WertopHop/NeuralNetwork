@@ -188,15 +188,15 @@ The project uses the **MNIST** dataset (OpenML ID: 554), which contains:
 
 ### Python version
 
-- **Accuracy on the testing set Sample Loss**: 97.3%
+- **Accuracy on the testing set**: 97.3%
 
 ### C++ Version
 
-- **Accuracy on the testing set Sample Loss**: 99.2%
+- **Accuracy on the testing set**: 99.2%
 
 ### Pytorch Version
 
-- **Accuracy on the testing set Sample Loss**: 96.3%
+- **Accuracy on the testing set**: 96.3%
 
   
 ---
