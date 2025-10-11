@@ -4,8 +4,9 @@ import torch.optim as optim
 import numpy as np
 
 
-class LTSM(nn.Module):
+class LSTMModel(nn.Module):
     def __init__(self):
+        super(LSTMModel, self).__init__()
         self.LSTM_dict = {}
         text = "This is a sample text for building the LSTM dictionary This text is for testing the LSTM model"
         tokens = self.tokenize(text)
