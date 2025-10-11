@@ -19,3 +19,9 @@ class LTSM(nn.Module):
                 self.LSTM_dict[word] = len(self.LSTM_dict)
             text_tokens = np.append(text_tokens, self.LSTM_dict[word])
         return text_tokens
+    
+def main():
+    lstm = LTSM()
+
+if __name__ == "__main__":
+    main()
