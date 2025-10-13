@@ -7,7 +7,7 @@ import numpy as np
 class LSTMModel(nn.Module):
     def __init__(self, vocab_size, embedding_dim, hidden_dim):
         super(LSTMModel, self).__init__()
-        self.embedding = nn.Embedding(vocab_size, embedding=embedding_dim)
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(embedding_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim, vocab_size)
 
