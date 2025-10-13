@@ -17,35 +17,93 @@ class LSTMModel(nn.Module):
         output = self.fc(output[-1])  
         return output
 
-def tokenize(text, LSTM_dict):
-    text_tokens = np.array([])
-    text_words = np.array(text.split())
-    for word in text_words:
-        if word not in LSTM_dict:
-            LSTM_dict[word] = len(LSTM_dict)
-        text_tokens = np.append(text_tokens, LSTM_dict[word])
-    return text_tokens, LSTM_dict
+
+def load_and_tokenize(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        text = f.read()
+    paragraphs = text.split('@')
+    paragraphs = [p.strip() for p in paragraphs if p.strip()]
+    word_to_token = {}
+    batches = []
+    for paragraph in paragraphs:
+        words = paragraph.split()
+        tokens = []
+        for word in words:
+            if word not in word_to_token:
+                word_to_token[word] = len(word_to_token)
+            tokens.append(word_to_token[word])
+        if tokens:
+            batches.append(np.array(tokens))
     
+    return batches, word_to_token
+
+    
+def learning(model, batches, criterion, optimizer, device, epochs=5):
+    model.train()
+    for epoch in range(epochs):
+        epoch_loss = 0.0
+        total_samples = 0
+        for batch_idx, tokens in enumerate(batches):
+            print(f"Processing batch {batch_idx + 1}/{len(batches)}")
+            if len(tokens) < 2:
+                continue
+            for i in range(1, len(tokens)):
+                input_tokens = tokens[:i]
+                target_token = tokens[i]
+                input_sequence = torch.tensor(input_tokens, dtype=torch.long).unsqueeze(1).to(device)
+                target = torch.tensor([target_token], dtype=torch.long).to(device)
+                output = model(input_sequence)
+                loss = criterion(output, target)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                epoch_loss += loss.item()
+                total_samples += 1
+        avg_loss = epoch_loss / total_samples if total_samples > 0 else 0
+        print(f"Epoch {epoch + 1}/{epochs}, Average Loss: {avg_loss:.4f}")
+
+def evaluate(model, count, words, word_to_token, device):
+    model.eval()
+    with torch.no_grad():
+        for _ in range(count):
+            input_tokens = [word_to_token.get(word, 0) for word in words]
+            input_sequence = torch.tensor(input_tokens, dtype=torch.long).unsqueeze(1).to(device)
+            output = model(input_sequence)
+            predicted_token = torch.argmax(output, dim=1).item()
+            for word, token in word_to_token.items():
+                if token == predicted_token:
+                    words.append(word)
+                    print(word, end=' ')
+                    break
+
 def main():
-    LSTM_dict = {}
-    text = "Frogs are amazing amphibians that thrive in both aquatic and terrestrial environments. They begin their life as eggs in water, which hatch into tadpoles. As tadpoles grow, they develop legs and eventually jump onto land. Adult frogs are known for their distinctive croaks and play a vital role in ecosystems by controlling insect populations. Frogs have smooth, moist skin that helps them absorb water and breathe. They are found all over the world, from tropical rainforests to temperate regions. Some species of frogs are brightly colored, which can serve as a warning to predators about their toxicity. Frogs are also important indicators of environmental health, as they are sensitive to changes in their habitats."
-    tokens, LSTM_dict = tokenize(text, LSTM_dict)
-    model = LSTMModel(vocab_size=len(LSTM_dict), embedding_dim=500, hidden_dim=1000)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f"Using device: {device}")
+    if device.type == 'cuda':
+        print(f"GPU: {torch.cuda.get_device_name(0)}")
+        print(f"Memory Usage:")
+        print(f"  Allocated: {torch.cuda.memory_allocated(0) / 1024**3:.2f} GB")
+        print(f"  Cached: {torch.cuda.memory_reserved(0) / 1024**3:.2f} GB")
+    
+    batches, word_to_token = load_and_tokenize('text.txt')
+    vocab_size = len(word_to_token)
+    print(f"Vocabulary size: {vocab_size}")
+    print(f"Number of batches: {len(batches)}")
+    model = LSTMModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=256).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
-    for epoch in range(5):
-        for i in range(1, len(tokens) - 2):
-            text_tokens = np.array([])
-            for word in tokens[:-i]: 
-                text_tokens = np.append(text_tokens, word)
-            last_word = torch.tensor([tokens[-i]], dtype=torch.long) 
-            input_sequence = torch.tensor(text_tokens, dtype=torch.long).unsqueeze(1)
-            output = model(input_sequence)
-            loss = criterion(output, last_word)  # предсказываем следующее слово
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            print(f"loss: {loss.item():.4f}")
+    
+    learning(model, batches, criterion, optimizer, device, epochs=5)
+    
+    input_text = input("Write the beginning and the number of words to generate: ").split()
+    if len(input_text) < 2:
+        print("Invalid input. Please provide a beginning text and a word count.")
+        return
+    begin_text = input_text[:-1]
+    word_count = int(input_text[-1])
+    print(' '.join(begin_text), end=' ')
+    evaluate(model, word_count, begin_text, word_to_token, device)
+    print()  
 
 
 if __name__ == "__main__":
