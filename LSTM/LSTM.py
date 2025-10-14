@@ -44,7 +44,7 @@ def learning(model, batches, criterion, optimizer, device, epochs=5):
         epoch_loss = 0.0
         total_samples = 0
         for batch_idx, tokens in enumerate(batches):
-            print(f"Processing batch {batch_idx + 1}/{len(batches)}")
+            print(f"Processing batch {batch_idx + 1}/{len(batches)}", end='\r')
             if len(tokens) < 2:
                 continue
             for i in range(1, len(tokens)):
@@ -78,13 +78,7 @@ def evaluate(model, count, words, word_to_token, device):
 
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")
-    if device.type == 'cuda':
-        print(f"GPU: {torch.cuda.get_device_name(0)}")
-        print(f"Memory Usage:")
-        print(f"  Allocated: {torch.cuda.memory_allocated(0) / 1024**3:.2f} GB")
-        print(f"  Cached: {torch.cuda.memory_reserved(0) / 1024**3:.2f} GB")
-    
+    print(f"Using device: {device}")    
     batches, word_to_token = load_and_tokenize('text.txt')
     vocab_size = len(word_to_token)
     print(f"Vocabulary size: {vocab_size}")
