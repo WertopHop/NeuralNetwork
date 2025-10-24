@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
+import os
 
 
 class LSTMModel(nn.Module):
@@ -76,20 +77,59 @@ def evaluate(model, count, words, word_to_token, device):
                     print(word, end=' ')
                     break
 
+def save_model(model, word_to_token, file_path='lstm_model.pth'):
+    checkpoint = {
+        'model_state_dict': model.state_dict(),
+        'word_to_token': word_to_token,
+        'vocab_size': len(word_to_token)
+    }
+    torch.save(checkpoint, file_path)
+    print(f"\nModel saved to {file_path}")
+
+def load_model(file_path='lstm_model.pth', device='cpu'):
+    if not os.path.exists(file_path):
+        return None, None
+    
+    checkpoint = torch.load(file_path, map_location=device)
+    word_to_token = checkpoint['word_to_token']
+    vocab_size = checkpoint['vocab_size']
+    
+    model = LSTMModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=256).to(device)
+    model.load_state_dict(checkpoint['model_state_dict'])
+    
+    print(f"Model loaded from {file_path}")
+    return model, word_to_token
+
 def main():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Using device: {device}")    
+    print(f"Using device: {device}")
+    model_path = 'lstm_model.pth'
     batches, word_to_token = load_and_tokenize('text.txt')
     vocab_size = len(word_to_token)
     print(f"Vocabulary size: {vocab_size}")
     print(f"Number of batches: {len(batches)}")
-    model = LSTMModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=256).to(device)
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    model = None
+    if os.path.exists(model_path):
+        response = input("Found saved model. Do you want to retrain? (yes/no): ").strip().lower()
+        if response in ['no', 'n']:
+            model, saved_word_to_token = load_model(model_path, device)
+            if saved_word_to_token != word_to_token:
+                print("Warning: Vocabulary has changed. Retraining is recommended.")
+                response = input("Continue with saved model anyway? (yes/no): ").strip().lower()
+                if response not in ['yes', 'y']:
+                    model = None
     
-    learning(model, batches, criterion, optimizer, device, epochs=5)
+    if model is None:
+        print("Training new model...")
+        model = LSTMModel(vocab_size=vocab_size, embedding_dim=128, hidden_dim=256).to(device)
+        criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters(), lr=0.001)
+        
+        learning(model, batches, criterion, optimizer, device, epochs=5)
+        save_model(model, word_to_token, model_path)
     
-    input_text = input("Write the beginning and the number of words to generate: ").split()
+    input_text = input("\nWrite the beginning and the number of words to generate: ").split()
     if len(input_text) < 2:
         print("Invalid input. Please provide a beginning text and a word count.")
         return
